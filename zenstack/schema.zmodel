@@ -75,9 +75,6 @@ model Innings {
   match    Matches    @relation(fields: [matchId], references: [id])
   dateId   DateTime   @db.Date
   date     Dates      @relation(fields: [dateId], references: [date])
-  batters  Batters[]
-  bowlers  Bowlers[]
-  fielders Fielders[]
   @@map("innings")
 }
 
@@ -92,8 +89,6 @@ model Batters {
   ducks     Int     @default(0)
   playerId  String
   player    Players @relation(fields: [playerId], references: [name])
-  inningsId Int
-  innings   Innings @relation(fields: [inningsId], references: [id])
   @@map("batting")
 }
 
@@ -109,8 +104,6 @@ model Bowlers {
   noBalls   Int     @default(0)
   playerId  String
   player    Players @relation(fields: [playerId], references: [name])
-  inningsId Int
-  innings   Innings @relation(fields: [inningsId], references: [id])
   @@map("bowling")
 }
 
@@ -120,8 +113,6 @@ model Fielders {
   runOuts   Int     @default(0)
   playerId  String
   player    Players @relation(fields: [playerId], references: [name])
-  inningsId Int
-  innings   Innings @relation(fields: [inningsId], references: [id])
   @@map("fielding")
 }
 
