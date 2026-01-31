@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TabStatsIndexRouteImport } from './routes/_tab/stats.index'
 import { Route as TabPlayersIndexRouteImport } from './routes/_tab/players.index'
 import { Route as TabMatchesIndexRouteImport } from './routes/_tab/matches.index'
+import { Route as TabExpenseIndexRouteImport } from './routes/_tab/expense.index'
 import { Route as TabCompareIndexRouteImport } from './routes/_tab/compare.index'
 import { Route as StatsStatsTeamsRouteImport } from './routes/_stats/stats.teams'
 import { Route as StatsStatsPlayerOfTheMatchRouteImport } from './routes/_stats/stats.player-of-the-match'
@@ -48,6 +49,11 @@ const TabPlayersIndexRoute = TabPlayersIndexRouteImport.update({
 const TabMatchesIndexRoute = TabMatchesIndexRouteImport.update({
   id: '/matches/',
   path: '/matches/',
+  getParentRoute: () => TabRoute,
+} as any)
+const TabExpenseIndexRoute = TabExpenseIndexRouteImport.update({
+  id: '/expense/',
+  path: '/expense/',
   getParentRoute: () => TabRoute,
 } as any)
 const TabCompareIndexRoute = TabCompareIndexRouteImport.update({
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/stats/player-of-the-match': typeof StatsStatsPlayerOfTheMatchRoute
   '/stats/teams': typeof StatsStatsTeamsRoute
   '/compare/': typeof TabCompareIndexRoute
+  '/expense/': typeof TabExpenseIndexRoute
   '/matches/': typeof TabMatchesIndexRoute
   '/players/': typeof TabPlayersIndexRoute
   '/stats/': typeof TabStatsIndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/stats/player-of-the-match': typeof StatsStatsPlayerOfTheMatchRoute
   '/stats/teams': typeof StatsStatsTeamsRoute
   '/compare': typeof TabCompareIndexRoute
+  '/expense': typeof TabExpenseIndexRoute
   '/matches': typeof TabMatchesIndexRoute
   '/players': typeof TabPlayersIndexRoute
   '/stats': typeof TabStatsIndexRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/_stats/stats/player-of-the-match': typeof StatsStatsPlayerOfTheMatchRoute
   '/_stats/stats/teams': typeof StatsStatsTeamsRoute
   '/_tab/compare/': typeof TabCompareIndexRoute
+  '/_tab/expense/': typeof TabExpenseIndexRoute
   '/_tab/matches/': typeof TabMatchesIndexRoute
   '/_tab/players/': typeof TabPlayersIndexRoute
   '/_tab/stats/': typeof TabStatsIndexRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/stats/player-of-the-match'
     | '/stats/teams'
     | '/compare/'
+    | '/expense/'
     | '/matches/'
     | '/players/'
     | '/stats/'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/stats/player-of-the-match'
     | '/stats/teams'
     | '/compare'
+    | '/expense'
     | '/matches'
     | '/players'
     | '/stats'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/_stats/stats/player-of-the-match'
     | '/_stats/stats/teams'
     | '/_tab/compare/'
+    | '/_tab/expense/'
     | '/_tab/matches/'
     | '/_tab/players/'
     | '/_tab/stats/'
@@ -210,6 +222,13 @@ declare module '@tanstack/react-router' {
       path: '/matches'
       fullPath: '/matches/'
       preLoaderRoute: typeof TabMatchesIndexRouteImport
+      parentRoute: typeof TabRoute
+    }
+    '/_tab/expense/': {
+      id: '/_tab/expense/'
+      path: '/expense'
+      fullPath: '/expense/'
+      preLoaderRoute: typeof TabExpenseIndexRouteImport
       parentRoute: typeof TabRoute
     }
     '/_tab/compare/': {
@@ -277,6 +296,7 @@ const StatsRouteWithChildren = StatsRoute._addFileChildren(StatsRouteChildren)
 
 interface TabRouteChildren {
   TabCompareIndexRoute: typeof TabCompareIndexRoute
+  TabExpenseIndexRoute: typeof TabExpenseIndexRoute
   TabMatchesIndexRoute: typeof TabMatchesIndexRoute
   TabPlayersIndexRoute: typeof TabPlayersIndexRoute
   TabStatsIndexRoute: typeof TabStatsIndexRoute
@@ -284,6 +304,7 @@ interface TabRouteChildren {
 
 const TabRouteChildren: TabRouteChildren = {
   TabCompareIndexRoute: TabCompareIndexRoute,
+  TabExpenseIndexRoute: TabExpenseIndexRoute,
   TabMatchesIndexRoute: TabMatchesIndexRoute,
   TabPlayersIndexRoute: TabPlayersIndexRoute,
   TabStatsIndexRoute: TabStatsIndexRoute,

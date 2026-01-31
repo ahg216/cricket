@@ -10,11 +10,11 @@ function TabLayout() {
 		<main className="flex h-dvh flex-col">
 			<Outlet />
 			<footer className="md:border-t">
-				<div className="container mx-auto grid grid-cols-4 px-4 py-2 md:py-3">
+				<div className="container mx-auto grid grid-cols-5 px-1 py-2 md:py-3">
 					{tabItems.map((item) => {
 						const isCurrentRoute = pathname === item.url;
 						return (
-							<Link to={item.url} key={item.name} className="group flex flex-col items-center px-2">
+							<Link to={item.url} key={item.name} className="group flex flex-col items-center px-1">
 								<div
 									className={cn(
 										"flex w-full max-w-15 justify-center rounded-full py-1.5 transition-colors group-hover:bg-muted-foreground/40",

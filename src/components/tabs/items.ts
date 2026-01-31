@@ -3,6 +3,7 @@ export const tabItems = [
 	{ name: "Stats", url: "/stats", icon: "/icons/stats.png", dateFilter: false },
 	{ name: "Compare", url: "/compare", icon: "/icons/compare.png", dateFilter: true },
 	{ name: "Players", url: "/players", icon: "/icons/players.png", dateFilter: false },
+	{ name: "Expense", url: "/expense", icon: "/icons/expenses.png", dateFilter: true },
 ];
 
 export const statsItems = [

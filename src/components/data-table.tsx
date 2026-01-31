@@ -1,16 +1,17 @@
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 
 import { ResizablePanelGroup, ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-interface DataTableProps<TData, TValue> {
+type DataTableProps<TData, TValue> = {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 	minSize?: number;
-}
+	showFooter?: boolean;
+};
 
-export function DataTable<TData, TValue>({ columns, data, minSize = 50 }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, minSize = 50, showFooter }: DataTableProps<TData, TValue>) {
 	const isMobile = useIsMobile();
 	const table = useReactTable({
 		data,
@@ -61,6 +62,27 @@ export function DataTable<TData, TValue>({ columns, data, minSize = 50 }: DataTa
 								</TableRow>
 							)}
 						</TableBody>
+						{showFooter && (
+							<TableFooter>
+								<TableRow>
+									{table.getVisibleFlatColumns().map((column, index) => {
+										const isFirst = index === 0;
+										const total = table.getFilteredRowModel().rows.reduce((sum, row) => {
+											const value = row.getValue(column.id);
+											return typeof value === "number" ? sum + value : sum;
+										}, 0);
+
+										return (
+											<TableCell key={column.id} className="font-medium">
+												{isFirst
+													? "Total"
+													: total.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+											</TableCell>
+										);
+									})}
+								</TableRow>
+							</TableFooter>
+						)}
 					</Table>
 				</div>
 			</ResizablePanel>
