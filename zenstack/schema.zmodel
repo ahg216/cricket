@@ -147,11 +147,10 @@ model Records {
 }
 
 model Expenses {
-  id        Int      @id @default(autoincrement())
   groundFee Int      @default(0)
   gearCost  Int      @default(0)
   foodCost  Int      @default(0)
-  dateId    DateTime @db.Date
+  dateId    DateTime @db.Date @id
   date      Dates    @relation(fields: [dateId], references: [date])
   @@map("expenses")
 }

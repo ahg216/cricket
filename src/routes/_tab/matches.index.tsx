@@ -2,37 +2,37 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 
-import { DateFilter, dateSearchSchema } from "@/components/date-filter";
+import { DateFilter, dateSearchSchema, type DateSearchSchema } from "@/components/date-filter";
 import { TabsLayout } from "@/components/tabs/tabs-layout";
 import { Item, ItemContent, ItemDescription, ItemFooter, ItemTitle } from "@/components/ui/item";
 import { db } from "@/lib/db";
 import { ballsToOvers, formatDate } from "@/lib/utils";
 
-const matchesQueryOptions = (date?: string[]) => {
+const matchesQueryOptions = ({ date, rivalry }: DateSearchSchema) => {
 	return queryOptions({
-		queryKey: ["matches", ...(date ?? ["all-time"])],
-		queryFn: () => getMatches({ data: { date } }),
+		queryKey: ["matches", date ?? rivalry ?? "all-time"],
+		queryFn: () => getMatches({ data: { date, rivalry } }),
 	});
 };
 
 const getMatches = createServerFn({ method: "GET" })
 	.inputValidator(dateSearchSchema)
-	.handler(async ({ data: { date } }) => {
+	.handler(async ({ data: { date, rivalry } }) => {
 		const matches = await db.matches.findMany({
-			where: { dateId: { in: date } },
-			orderBy: { dateId: "asc" },
+			where: { date: { date, rivalryId: rivalry } },
+			orderBy: { id: "asc" },
 			include: { innings: true },
 		});
-		return Object.groupBy(matches, (match) => String(formatDate([match.dateId])));
+		return Object.groupBy(matches, (match) => String(formatDate(match.dateId)));
 	});
 
 export const Route = createFileRoute("/_tab/matches/")({
 	head: () => ({ meta: [{ title: "Matches" }] }),
 	beforeLoad: ({ search }) => ({ date: search.date }),
-	loader: async ({ context }) => await context.queryClient.ensureQueryData(matchesQueryOptions(context.date)),
+	loader: async ({ context }) => await context.queryClient.ensureQueryData(matchesQueryOptions(context)),
 	component: () => {
-		const { date } = Route.useRouteContext();
-		const { data } = useSuspenseQuery(matchesQueryOptions(date));
+		const context = Route.useRouteContext();
+		const { data } = useSuspenseQuery(matchesQueryOptions(context));
 		return (
 			<TabsLayout title="Matches" secondary={<DateFilter />}>
 				{Object.keys(data)
@@ -44,19 +44,19 @@ export const Route = createFileRoute("/_tab/matches/")({
 								<h2 className="font-semibold">{date}</h2>
 								<div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
 									{matches.map(({ id, innings, winnerId, winBy }) => (
-										<Item key={id} variant="outline" className="items-start">
+										<Item key={id} variant="outline" className="items-start gap-1">
 											<ItemContent>
 												{innings.map((inning) => (
 													<div key={inning.id} className="flex items-center justify-between gap-3">
 														<ItemTitle>{inning.teamId}</ItemTitle>
 														<ItemDescription>
-															{`${inning.runs}-${inning.wickets}  (${ballsToOvers(inning.balls)})`}
+															{`${inning.runs}${!inning.allOuts ? `-${inning.wickets}` : ""}  (${ballsToOvers(inning.balls)})`}
 														</ItemDescription>
 													</div>
 												))}
 											</ItemContent>
 											<ItemFooter>
-												<ItemDescription>{`${winnerId} win by ${winBy}`}</ItemDescription>
+												<ItemDescription>{`${winnerId} ${winBy ? `wins by ${winBy}` : `wins`}`}</ItemDescription>
 											</ItemFooter>
 										</Item>
 									))}
