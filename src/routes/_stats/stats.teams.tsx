@@ -29,7 +29,8 @@ const getTeams = createServerFn({ method: "GET" }).handler(async () => {
 const getTeamStats = createServerFn({ method: "GET" })
 	.inputValidator(dateSearchSchema.extend({ teamId: z.string() }))
 	.handler(async ({ data: { teamId, date, rivalry } }) => {
-		const [wonMatches, lowestScore, highestScore, aggregate] = await Promise.all([
+		const [playedMatches, wonMatches, lowestScore, highestScore, aggregate] = await Promise.all([
+			db.matches.count({ where: { innings: { some: { teamId } }, date: { date, rivalryId: rivalry } } }),
 			db.matches.count({ where: { winnerId: teamId, date: { date, rivalryId: rivalry } } }),
 			db.innings.findFirst({ where: { teamId, match: { date: { date, rivalryId: rivalry } } }, orderBy: { runs: "asc" } }),
 			db.innings.findFirst({ where: { teamId, match: { date: { date, rivalryId: rivalry } } }, orderBy: { runs: "desc" } }),
@@ -40,6 +41,7 @@ const getTeamStats = createServerFn({ method: "GET" })
 		]);
 		return {
 			teamId,
+			playedMatches,
 			wonMatches,
 			totalRuns: aggregate._sum.runs || 0,
 			totalBalls: aggregate._sum.balls || 0,
@@ -63,12 +65,10 @@ export const Route = createFileRoute("/_stats/stats/teams")({
 		const isMobile = useIsMobile();
 		const context = Route.useRouteContext();
 		const { data } = useSuspenseQuery(teamStatsQueryOptions(context));
-		const totalMatches = data.reduce((acc, { wonMatches }) => acc + wonMatches, 0);
 		const teamStats = data
 			.map((stat) => ({
 				...stat,
-				totalMatches,
-				winPercent: totalMatches ? Number(((stat.wonMatches / totalMatches) * 100).toFixed()) : 0,
+				winPercent: stat.playedMatches ? Number(((stat.wonMatches / stat.playedMatches) * 100).toFixed()) : 0,
 			}))
 			.sort((a, b) => b.winPercent - a.winPercent);
 
@@ -89,8 +89,8 @@ export const Route = createFileRoute("/_stats/stats/teams")({
 								<TableBody>
 									<TableRow>
 										<TableCell>Matches Played</TableCell>
-										{teamStats.map(({ totalMatches }, index) => (
-											<TableCell key={index}>{totalMatches}</TableCell>
+										{teamStats.map(({ playedMatches }, index) => (
+											<TableCell key={index}>{playedMatches}</TableCell>
 										))}
 									</TableRow>
 									<TableRow>
