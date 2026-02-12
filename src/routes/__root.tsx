@@ -25,7 +25,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 		],
 		links: [{ rel: "stylesheet", href: appCss }],
 	}),
-	shellComponent: RootDocument,
 	validateSearch: (search) => rootSearchSchema.parse(search),
 	beforeLoad: ({ search }) => ({ date: search.date, rivalry: search.rivalry }),
 	loader: async ({ context }) =>
@@ -33,25 +32,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 			context.queryClient.ensureQueryData(playerQueryOptions()),
 			context.queryClient.ensureQueryData(datesQueryOptions()),
 		]),
+	shellComponent: ({ children }: { children: React.ReactNode }) => {
+		const { queryClient } = Route.useRouteContext();
+		return (
+			<html lang="en">
+				<head>
+					<HeadContent />
+				</head>
+				<body>
+					<QueryClientProvider client={queryClient}>
+						<NuqsAdapter>
+							<MenuProvider>{children}</MenuProvider>
+						</NuqsAdapter>
+						<Toaster />
+						<ReactQueryDevtools client={queryClient} initialIsOpen={true} />
+					</QueryClientProvider>
+					<Scripts />
+				</body>
+			</html>
+		);
+	},
 });
-
-function RootDocument({ children }: { children: React.ReactNode }) {
-	const { queryClient } = Route.useRouteContext();
-	return (
-		<html lang="en">
-			<head>
-				<HeadContent />
-			</head>
-			<body>
-				<QueryClientProvider client={queryClient}>
-					<NuqsAdapter>
-						<MenuProvider>{children}</MenuProvider>
-					</NuqsAdapter>
-					<Toaster />
-					<ReactQueryDevtools client={queryClient} initialIsOpen={true} />
-				</QueryClientProvider>
-				<Scripts />
-			</body>
-		</html>
-	);
-}
