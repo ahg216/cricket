@@ -1,11 +1,40 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
 import { TabsLayout } from "@/components/tabs-layout";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { db } from "@/lib/db";
+import { formatDate } from "@/lib/utils";
+
+const getMatchById = createServerFn({ method: "GET" })
+	.inputValidator(z.object({ id: z.string() }))
+	.handler(async ({ data }) => {
+		const match = await db.matches.findUnique({ where: { id: Number(data.id) } });
+		if (!match) throw notFound();
+		const dateId = formatDate(match.dateId);
+		return { ...match, dateId, fullTitle: `${match.title} (${dateId})` };
+	});
 
 export const Route = createFileRoute("/_tab/matches/$matchId")({
-	head: ({ params }) => ({ meta: [{ title: params.matchId }] }),
+	loader: async ({ context, params }) =>
+		await context.queryClient.ensureQueryData({
+			queryKey: ["match", params.matchId],
+			queryFn: () => getMatchById({ data: { id: params.matchId } }),
+		}),
+	head: ({ loaderData }) => ({
+		meta: [{ title: loaderData?.fullTitle ?? "Match not found" }],
+	}),
 	component: () => {
-		const { matchId } = Route.useParams();
-		return <TabsLayout title={matchId} filters={{ date: false }}></TabsLayout>;
+		const data = Route.useLoaderData();
+		return (
+			<TabsLayout title={data.fullTitle} filters={{ date: false }}>
+				{data.scorecardUrl && (
+					<AspectRatio ratio={16 / 9} className="w-full overflow-hidden rounded-md bg-muted md:rounded-lg">
+						<img src={data.scorecardUrl} alt={data.fullTitle} className="h-auto w-full object-cover" />
+					</AspectRatio>
+				)}
+			</TabsLayout>
+		);
 	},
 });

@@ -54,7 +54,7 @@ const getTeamStats = createServerFn({ method: "GET" })
 			Promise.all(
 				teamIds.map((teamId) =>
 					db.innings.findFirst({
-						where: { teamId, ...whereClause },
+						where: { teamId, allOuts: data?.date ? undefined : 1, ...whereClause },
 						orderBy: { runs: "asc" },
 					}),
 				),
@@ -64,7 +64,7 @@ const getTeamStats = createServerFn({ method: "GET" })
 			Promise.all(
 				teamIds.map((teamId) =>
 					db.innings.findFirst({
-						where: { teamId, ...whereClause },
+						where: { teamId, match: { totalOvers: 8 }, ...whereClause },
 						orderBy: { runs: "desc" },
 					}),
 				),
