@@ -4,21 +4,19 @@ import {
 	getSortedRowModel,
 	useReactTable,
 	type ColumnDef,
-	type Table as TanstackTable,
 } from "@tanstack/react-table";
 
 import { ResizablePanelGroup, ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type DataTableProps<TData, TValue> = {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 	minSize?: number;
-	footer?: (table: TanstackTable<TData>) => React.JSX.Element;
 };
 
-export function DataTable<TData, TValue>({ columns, data, minSize = 50, footer }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, minSize = 50 }: DataTableProps<TData, TValue>) {
 	const isMobile = useIsMobile();
 	const table = useReactTable({
 		data,
@@ -69,7 +67,19 @@ export function DataTable<TData, TValue>({ columns, data, minSize = 50, footer }
 								</TableRow>
 							)}
 						</TableBody>
-						{footer?.(table)}
+						{table.getFooterGroups().some((fg) => fg.headers.some((h) => h.column.columnDef.footer)) && (
+							<TableFooter>
+								{table.getFooterGroups().map((footerGroup) => (
+									<TableRow key={footerGroup.id}>
+										{footerGroup.headers.map((header) => (
+											<TableCell key={header.id} className="font-medium">
+												{header.isPlaceholder ? null : flexRender(header.column.columnDef.footer, header.getContext())}
+											</TableCell>
+										))}
+									</TableRow>
+								))}
+							</TableFooter>
+						)}
 					</Table>
 				</div>
 			</ResizablePanel>
